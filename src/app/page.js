@@ -7,23 +7,26 @@ import Link from 'next/link'
 
 export default function Home() {
   const [annonces, setAnnonces] = useState([])
+  const [toutesAnnonces, setToutesAnnonces] = useState([])
   const [chargement, setChargement] = useState(true)
   const [user, setUser] = useState(null)
+  const [recherche, setRecherche] = useState({ depart: '', arrivee: '' })
 
   useEffect(() => {
     async function chargerDonnees() {
-      // Charge l'utilisateur connecté
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
 
-      // Charge les annonces
       const { data, error } = await supabase
         .from('annonces')
         .select('*')
         .eq('statut', 'active')
         .order('created_at', { ascending: false })
 
-      if (!error) setAnnonces(data)
+      if (!error) {
+        setAnnonces(data)
+        setToutesAnnonces(data)
+      }
       setChargement(false)
     }
 
@@ -33,6 +36,24 @@ export default function Home() {
   async function handleDeconnexion() {
     await supabase.auth.signOut()
     setUser(null)
+  }
+
+  function handleRecherche() {
+    if (!recherche.depart && !recherche.arrivee) {
+      setAnnonces(toutesAnnonces)
+      return
+    }
+    const filtrees = toutesAnnonces.filter(a => {
+      const matchDepart = a.ville_depart.toLowerCase().includes(recherche.depart.toLowerCase())
+      const matchArrivee = a.ville_arrivee.toLowerCase().includes(recherche.arrivee.toLowerCase())
+      return matchDepart && matchArrivee
+    })
+    setAnnonces(filtrees)
+  }
+
+  function handleReset() {
+    setRecherche({ depart: '', arrivee: '' })
+    setAnnonces(toutesAnnonces)
   }
 
   return (
@@ -65,7 +86,7 @@ export default function Home() {
               </Link>
               <Link href="/inscription">
                 <button className="bg-green-600 text-white text-sm px-4 py-2 rounded-xl hover:bg-green-700 transition-colors">
-                  Sinscrire
+                  S'inscrire
                 </button>
               </Link>
             </>
@@ -85,15 +106,22 @@ export default function Home() {
           <input
             type="text"
             placeholder="Ville de départ"
+            value={recherche.depart}
+            onChange={(e) => setRecherche({ ...recherche, depart: e.target.value })}
             className="flex-1 px-3 py-2 text-gray-700 text-sm outline-none"
           />
           <span className="text-gray-300 self-center">→</span>
           <input
             type="text"
             placeholder="Ville d'arrivée"
+            value={recherche.arrivee}
+            onChange={(e) => setRecherche({ ...recherche, arrivee: e.target.value })}
             className="flex-1 px-3 py-2 text-gray-700 text-sm outline-none"
           />
-          <button className="bg-green-600 text-white px-5 py-2 rounded-xl text-sm font-medium hover:bg-green-700 transition-colors">
+          <button
+            onClick={handleRecherche}
+            className="bg-green-600 text-white px-5 py-2 rounded-xl text-sm font-medium hover:bg-green-700 transition-colors"
+          >
             Chercher
           </button>
         </div>
@@ -101,9 +129,20 @@ export default function Home() {
 
       {/* Liste des annonces */}
       <section className="max-w-4xl mx-auto px-6 py-10">
-        <h3 className="text-lg font-semibold text-gray-700 mb-6">
-          Annonces récentes
-        </h3>
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-lg font-semibold text-gray-700">
+            Annonces récentes
+          </h3>
+          {(recherche.depart || recherche.arrivee) && (
+            <button
+              onClick={handleReset}
+              className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              Réinitialiser ✕
+            </button>
+          )}
+        </div>
+
         {chargement ? (
           <div className="text-center text-gray-400 py-20">
             Chargement des annonces...
@@ -111,8 +150,8 @@ export default function Home() {
         ) : annonces.length === 0 ? (
           <div className="text-center text-gray-400 py-20">
             <p className="text-4xl mb-4">📦</p>
-            <p>Aucune annonce pour le moment.</p>
-            <p className="text-sm mt-2">Sois le premier à publier un trajet !</p>
+            <p>Aucune annonce trouvée.</p>
+            <p className="text-sm mt-2">Essaie avec d'autres villes !</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
