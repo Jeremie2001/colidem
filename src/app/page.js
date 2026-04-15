@@ -70,6 +70,12 @@ export default function Home() {
                   Publier une annonce
                 </button>
               </Link>
+
+               <Link href="/profil">
+                <button className="text-sm text-gray-600 hover:text-gray-800 transition-colors">
+                  Mon profil
+                </button>
+              </Link>
               <button
                 onClick={handleDeconnexion}
                 className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
