@@ -98,9 +98,12 @@ export default function DetailAnnonce() {
               <p className="text-sm font-medium text-gray-700">{annonce.kilos_disponibles} kg</p>
             </div>
             <div className="bg-green-50 rounded-xl p-3 text-center">
-              <p className="text-xs text-green-600 mb-1">Prix / kilo</p>
-              <p className="text-lg font-bold text-green-600">{annonce.prix_par_kilo}€</p>
-            </div>
+                <p className="text-xs text-green-600 mb-1">Prix / kilo</p>
+                <p className="text-lg font-bold text-green-600">{annonce.prix_par_kilo}€</p>
+                <p className="text-xs text-green-500">
+                    ≈ {(annonce.prix_par_kilo * 655.957).toFixed(0)} FCFA
+                </p>
+                </div>
           </div>
 
           {annonce.description && (
@@ -145,9 +148,16 @@ export default function DetailAnnonce() {
           </div>
 
           <div className="bg-green-50 rounded-xl p-4 flex justify-between items-center mb-6">
-            <span className="text-sm text-green-700">Total estime</span>
-            <span className="text-2xl font-bold text-green-600">{montantTotal}€</span>
-          </div>
+  <span className="text-sm text-green-700">Total estimé</span>
+            <div className="text-right">
+                <p className="text-2xl font-bold text-green-600">{montantTotal}€</p>
+                <p className="text-xs text-green-500">
+                ≈ {(montantTotal * 655.957).toFixed(0)} FCFA
+                </p>
+            </div>
+            </div>
+
+
 
           {user ? (
             <a

@@ -12,12 +12,17 @@ export default function CarteAnnonce({ annonce }) {
               {annonce.ville_depart} → {annonce.ville_arrivee}
             </h2>
           </div>
+          
+
           <div className="text-right">
             <span className="text-2xl font-bold text-green-600">
-              {annonce.prix_par_kilo}€
+                {annonce.prix_par_kilo}€
             </span>
             <p className="text-xs text-gray-400">/kilo</p>
-          </div>
+            <p className="text-xs text-gray-400">
+                ≈ {(annonce.prix_par_kilo * 655.957).toFixed(0)} FCFA
+            </p>
+            </div>
         </div>
 
         <div className="flex gap-4 text-sm text-gray-500 mb-4">

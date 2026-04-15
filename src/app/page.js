@@ -60,25 +60,24 @@ export default function Home() {
     <main className="min-h-screen bg-gray-50">
 
       {/* Header */}
-      <header className="bg-white border-b border-gray-100 px-6 py-4 flex justify-between items-center">
-        <h1 className="text-xl font-bold text-green-600">Colidem</h1>
+      <header className="bg-white border-b border-gray-100 px-6 py-4 flex justify-between items-center sticky top-0 z-50">
+        <h1 className="text-2xl font-black text-green-600 tracking-tight">Colidem</h1>
         <div className="flex gap-3 items-center">
           {user ? (
             <>
               <Link href="/publier">
-                <button className="bg-green-600 text-white text-sm px-4 py-2 rounded-xl hover:bg-green-700 transition-colors">
+                <button className="bg-green-600 text-white text-sm px-4 py-2 rounded-xl hover:bg-green-700 transition-colors font-medium">
                   Publier une annonce
                 </button>
               </Link>
-
-               <Link href="/profil">
+              <Link href="/profil">
                 <button className="text-sm text-gray-600 hover:text-gray-800 transition-colors">
                   Mon profil
                 </button>
               </Link>
               <button
                 onClick={handleDeconnexion}
-                className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
               >
                 Déconnexion
               </button>
@@ -86,12 +85,12 @@ export default function Home() {
           ) : (
             <>
               <Link href="/connexion">
-                <button className="text-sm text-gray-600 hover:text-gray-800 transition-colors">
+                <button className="text-sm text-gray-600 hover:text-gray-800 transition-colors font-medium">
                   Se connecter
                 </button>
               </Link>
               <Link href="/inscription">
-                <button className="bg-green-600 text-white text-sm px-4 py-2 rounded-xl hover:bg-green-700 transition-colors">
+                <button className="bg-green-600 text-white text-sm px-4 py-2 rounded-xl hover:bg-green-700 transition-colors font-medium">
                   S'inscrire
                 </button>
               </Link>
@@ -100,45 +99,109 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="bg-green-600 text-white px-6 py-12 text-center">
-        <h2 className="text-3xl font-bold mb-3">
-          Envoyez vos colis facilement
-        </h2>
-        <p className="text-green-100 text-lg mb-8">
-          Trouvez un voyageur qui part vers votre destination
-        </p>
-        <div className="bg-white rounded-2xl p-3 max-w-xl mx-auto flex gap-2">
-          <input
-            type="text"
-            placeholder="Ville de départ"
-            value={recherche.depart}
-            onChange={(e) => setRecherche({ ...recherche, depart: e.target.value })}
-            className="flex-1 px-3 py-2 text-gray-700 text-sm outline-none"
-          />
-          <span className="text-gray-300 self-center">→</span>
-          <input
-            type="text"
-            placeholder="Ville d'arrivée"
-            value={recherche.arrivee}
-            onChange={(e) => setRecherche({ ...recherche, arrivee: e.target.value })}
-            className="flex-1 px-3 py-2 text-gray-700 text-sm outline-none"
-          />
-          <button
-            onClick={handleRecherche}
-            className="bg-green-600 text-white px-5 py-2 rounded-xl text-sm font-medium hover:bg-green-700 transition-colors"
-          >
-            Chercher
-          </button>
+      {/* Hero avec image de fond */}
+      <section className="relative text-white text-center overflow-hidden" style={{ minHeight: '420px' }}>
+        <img
+          src="/hero.jpg"
+          alt="Envoi de colis"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-green-900 opacity-70"></div>
+        <div className="relative z-10 px-6 py-16">
+          <div className="inline-block bg-green-500 bg-opacity-40 text-green-100 text-xs font-semibold px-4 py-1.5 rounded-full mb-4">
+            🌍 Dakar ↔ Europe
+          </div>
+          <h2 className="text-4xl font-black mb-3 leading-tight">
+            Envoyez vos colis<br />facilement
+          </h2>
+          <p className="text-green-100 text-lg mb-8 max-w-xl mx-auto">
+            Trouvez un voyageur qui part vers votre destination — rapide, sécurisé et abordable
+          </p>
+
+          {/* Barre de recherche */}
+          <div className="bg-white rounded-2xl p-3 max-w-xl mx-auto flex gap-2 shadow-xl">
+            <input
+              type="text"
+              placeholder="Ville de départ"
+              value={recherche.depart}
+              onChange={(e) => setRecherche({ ...recherche, depart: e.target.value })}
+              className="flex-1 px-3 py-2 text-gray-700 text-sm outline-none"
+            />
+            <span className="text-gray-300 self-center text-lg">→</span>
+            <input
+              type="text"
+              placeholder="Ville d'arrivée"
+              value={recherche.arrivee}
+              onChange={(e) => setRecherche({ ...recherche, arrivee: e.target.value })}
+              className="flex-1 px-3 py-2 text-gray-700 text-sm outline-none"
+            />
+            <button
+              onClick={handleRecherche}
+              className="bg-green-600 text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-green-700 transition-colors"
+            >
+              Chercher
+            </button>
+          </div>
+
+          {/* Stats */}
+          <div className="flex justify-center gap-8 mt-8">
+            <div className="text-center">
+              <p className="text-2xl font-black">{toutesAnnonces.length}+</p>
+              <p className="text-green-200 text-xs mt-1">Annonces actives</p>
+            </div>
+            <div className="w-px bg-green-600"></div>
+            <div className="text-center">
+              <p className="text-2xl font-black">12€</p>
+              <p className="text-green-200 text-xs mt-1">Prix moyen/kg</p>
+            </div>
+            <div className="w-px bg-green-600"></div>
+            <div className="text-center">
+              <p className="text-2xl font-black">100%</p>
+              <p className="text-green-200 text-xs mt-1">Gratuit</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Comment ça marche */}
+      <section className="bg-white py-12 px-6">
+        <div className="max-w-4xl mx-auto">
+          <h3 className="text-center text-lg font-bold text-gray-800 mb-8">
+            Comment ça marche ?
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="text-center">
+              <div className="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-3">
+                🔍
+              </div>
+              <p className="font-semibold text-gray-800 mb-1">Cherche un trajet</p>
+              <p className="text-sm text-gray-500">Trouve un voyageur qui part vers ta destination</p>
+            </div>
+            <div className="text-center">
+              <div className="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-3">
+                💬
+              </div>
+              <p className="font-semibold text-gray-800 mb-1">Contacte via WhatsApp</p>
+              <p className="text-sm text-gray-500">Discute directement avec le voyageur</p>
+            </div>
+            <div className="text-center">
+              <div className="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-3">
+                📦
+              </div>
+              <p className="font-semibold text-gray-800 mb-1">Envoie ton colis</p>
+              <p className="text-sm text-gray-500">Dépose et récupère ton colis en toute sécurité</p>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Liste des annonces */}
       <section className="max-w-4xl mx-auto px-6 py-10">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-semibold text-gray-700">
-            Annonces récentes
-          </h3>
+          <div>
+            <h3 className="text-lg font-bold text-gray-800">Annonces récentes</h3>
+            <p className="text-sm text-gray-400">Voyageurs disponibles</p>
+          </div>
           {(recherche.depart || recherche.arrivee) && (
             <button
               onClick={handleReset}
@@ -167,6 +230,13 @@ export default function Home() {
           </div>
         )}
       </section>
+
+      {/* Footer */}
+      <footer className="bg-white border-t border-gray-100 px-6 py-8 text-center">
+        <h2 className="text-xl font-black text-green-600 mb-2">Colidem</h2>
+        <p className="text-sm text-gray-400">La marketplace du bagage partagé entre l'Afrique et l'Europe</p>
+        <p className="text-xs text-gray-300 mt-4">© 2026 Colidem — Tous droits réservés</p>
+      </footer>
 
     </main>
   )
