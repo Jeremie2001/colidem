@@ -21,6 +21,7 @@ export default function Home() {
         .from('annonces')
         .select('*')
         .eq('statut', 'active')
+        .gte('date_voyage', new Date().toISOString().split('T')[0])
         .order('created_at', { ascending: false })
 
       if (!error) {
@@ -60,44 +61,45 @@ export default function Home() {
     <main className="min-h-screen bg-gray-50">
 
       {/* Header */}
-      <header className="bg-white border-b border-gray-100 px-6 py-4 flex justify-between items-center sticky top-0 z-50">
-        <h1 className="text-2xl font-black text-green-600 tracking-tight">Colidem</h1>
-        <div className="flex gap-3 items-center">
-          {user ? (
-            <>
-              <Link href="/publier">
-                <button className="bg-green-600 text-white text-sm px-4 py-2 rounded-xl hover:bg-green-700 transition-colors font-medium">
-                  Publier une annonce
-                </button>
-              </Link>
-              <Link href="/profil">
-                <button className="text-sm text-gray-600 hover:text-gray-800 transition-colors">
-                  Mon profil
-                </button>
-              </Link>
-              <button
-                onClick={handleDeconnexion}
-                className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                Déconnexion
-              </button>
-            </>
-          ) : (
-            <>
-              <Link href="/connexion">
-                <button className="text-sm text-gray-600 hover:text-gray-800 transition-colors font-medium">
-                  Se connecter
-                </button>
-              </Link>
-              <Link href="/inscription">
-                <button className="bg-green-600 text-white text-sm px-4 py-2 rounded-xl hover:bg-green-700 transition-colors font-medium">
-                  S'inscrire
-                </button>
-              </Link>
-            </>
-          )}
-        </div>
-      </header>
+      <header className="bg-white border-b border-gray-100 px-4 py-3 flex justify-between items-center sticky top-0 z-50">
+  <h1 className="text-xl font-black text-green-600">Colidem</h1>
+  <div className="flex gap-2 items-center">
+    {user ? (
+      <>
+        <Link href="/publier">
+          <button className="bg-green-600 text-white text-xs md:text-sm px-3 md:px-4 py-2 rounded-xl hover:bg-green-700 transition-colors font-medium">
+            <span className="md:hidden">+ Publier</span>
+            <span className="hidden md:inline">Publier une annonce</span>
+          </button>
+        </Link>
+        <Link href="/profil">
+          <button className="text-xs md:text-sm text-gray-600 hover:text-gray-800 transition-colors">
+            Mon profil
+          </button>
+        </Link>
+        <button
+          onClick={handleDeconnexion}
+          className="text-xs md:text-sm text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          Déconnexion
+        </button>
+      </>
+    ) : (
+      <>
+        <Link href="/connexion">
+          <button className="text-xs md:text-sm text-gray-600 font-medium">
+            Se connecter
+          </button>
+        </Link>
+        <Link href="/inscription">
+          <button className="bg-green-600 text-white text-xs md:text-sm px-3 md:px-4 py-2 rounded-xl hover:bg-green-700 transition-colors font-medium">
+            S'inscrire
+          </button>
+        </Link>
+      </>
+    )}
+  </div>
+</header>
 
       {/* Hero avec image de fond */}
       <section className="relative text-white text-center overflow-hidden" style={{ minHeight: '420px' }}>
@@ -119,29 +121,54 @@ export default function Home() {
           </p>
 
           {/* Barre de recherche */}
-          <div className="bg-white rounded-2xl p-3 max-w-xl mx-auto flex gap-2 shadow-xl">
-            <input
-              type="text"
-              placeholder="Ville de départ"
-              value={recherche.depart}
-              onChange={(e) => setRecherche({ ...recherche, depart: e.target.value })}
-              className="flex-1 px-3 py-2 text-gray-700 text-sm outline-none"
-            />
-            <span className="text-gray-300 self-center text-lg">→</span>
-            <input
-              type="text"
-              placeholder="Ville d'arrivée"
-              value={recherche.arrivee}
-              onChange={(e) => setRecherche({ ...recherche, arrivee: e.target.value })}
-              className="flex-1 px-3 py-2 text-gray-700 text-sm outline-none"
-            />
-            <button
-              onClick={handleRecherche}
-              className="bg-green-600 text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-green-700 transition-colors"
-            >
-              Chercher
-            </button>
-          </div>
+          {/* Mobile — champs empilés */}
+<div className="bg-white rounded-2xl p-2 max-w-xl mx-auto shadow-xl md:hidden">
+  <input
+    type="text"
+    placeholder="Ville de départ"
+    value={recherche.depart}
+    onChange={(e) => setRecherche({ ...recherche, depart: e.target.value })}
+    className="w-full px-3 py-2 text-gray-700 text-sm outline-none border-b border-gray-100"
+  />
+  <input
+    type="text"
+    placeholder="Ville d'arrivée"
+    value={recherche.arrivee}
+    onChange={(e) => setRecherche({ ...recherche, arrivee: e.target.value })}
+    className="w-full px-3 py-2 text-gray-700 text-sm outline-none mb-2"
+  />
+  <button
+    onClick={handleRecherche}
+    className="w-full bg-green-600 text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-green-700 transition-colors"
+  >
+    Chercher
+  </button>
+</div>
+
+{/* Desktop — champs sur une ligne */}
+<div className="hidden md:flex bg-white rounded-2xl p-3 max-w-xl mx-auto gap-2 shadow-xl">
+  <input
+    type="text"
+    placeholder="Ville de départ"
+    value={recherche.depart}
+    onChange={(e) => setRecherche({ ...recherche, depart: e.target.value })}
+    className="flex-1 px-3 py-2 text-gray-700 text-sm outline-none"
+  />
+  <span className="text-gray-300 self-center text-lg">→</span>
+  <input
+    type="text"
+    placeholder="Ville d'arrivée"
+    value={recherche.arrivee}
+    onChange={(e) => setRecherche({ ...recherche, arrivee: e.target.value })}
+    className="flex-1 px-3 py-2 text-gray-700 text-sm outline-none"
+  />
+  <button
+    onClick={handleRecherche}
+    className="bg-green-600 text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-green-700 transition-colors"
+  >
+    Chercher
+  </button>
+</div>
 
           {/* Stats */}
           <div className="flex justify-center gap-8 mt-8">

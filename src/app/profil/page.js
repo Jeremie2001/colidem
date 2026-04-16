@@ -10,6 +10,7 @@ export default function Profil() {
   const [user, setUser] = useState(null)
   const [profil, setProfil] = useState(null)
   const [annonces, setAnnonces] = useState([])
+  const [reservations, setReservations] = useState([])
   const [chargement, setChargement] = useState(true)
   const [message, setMessage] = useState('')
   const [form, setForm] = useState({ nom: '', telephone: '' })
@@ -41,6 +42,15 @@ export default function Profil() {
         .order('created_at', { ascending: false })
 
       if (annonces) setAnnonces(annonces)
+
+      const { data: resas } = await supabase
+        .from('reservations')
+        .select('*, annonces(*)')
+        .eq('expediteur_id', session.user.id)
+        .order('created_at', { ascending: false })
+
+      if (resas) setReservations(resas)
+
       setChargement(false)
     }
 
@@ -48,21 +58,22 @@ export default function Profil() {
   }, [])
 
   async function handleSauvegarder() {
-  const { data: { session } } = await supabase.auth.getSession()
-  if (!session) return
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) return
 
-  const { error } = await supabase
-    .from('profiles')
-    .update({ nom: form.nom, telephone: form.telephone })
-    .eq('id', session.user.id)
+    const { error } = await supabase
+      .from('profiles')
+      .update({ nom: form.nom, telephone: form.telephone })
+      .eq('id', session.user.id)
 
-  if (error) {
-    setMessage('Erreur lors de la sauvegarde.')
-  } else {
-    setMessage('Profil mis à jour !')
-    setTimeout(() => setMessage(''), 2000)
+    if (error) {
+      setMessage('Erreur lors de la sauvegarde.')
+    } else {
+      setMessage('Profil mis à jour !')
+      setTimeout(() => setMessage(''), 2000)
+    }
   }
-}
+
   async function handleSupprimerAnnonce(id) {
     await supabase.from('annonces').delete().eq('id', id)
     setAnnonces(annonces.filter(a => a.id !== id))
@@ -108,7 +119,6 @@ export default function Profil() {
         {/* Modifier profil */}
         <div className="bg-white border border-gray-200 rounded-2xl p-6">
           <p className="text-sm font-medium text-gray-700 mb-4">Modifier mon profil</p>
-
           <div className="flex flex-col gap-4">
             <div>
               <label className="text-sm text-gray-600 block mb-1">Nom complet</label>
@@ -178,6 +188,42 @@ export default function Profil() {
                   >
                     Supprimer
                   </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Mes réservations */}
+        <div className="bg-white border border-gray-200 rounded-2xl p-6">
+          <p className="text-sm font-medium text-gray-700 mb-4">
+            Mes réservations ({reservations.length})
+          </p>
+
+          {reservations.length === 0 ? (
+            <p className="text-sm text-gray-400 text-center py-6">
+              Tu n'as pas encore de réservation.
+            </p>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {reservations.map((resa) => (
+                <div key={resa.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
+                  <div>
+                    <p className="text-sm font-medium text-gray-800">
+                      {resa.annonces?.ville_depart} → {resa.annonces?.ville_arrivee}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      {resa.kilos_reserves} kg · {resa.montant_total}€
+                    </p>
+                  </div>
+                  <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
+                    resa.statut === 'accepte' ? 'bg-green-100 text-green-600' :
+                    resa.statut === 'refuse' ? 'bg-red-100 text-red-600' :
+                    'bg-yellow-100 text-yellow-600'
+                  }`}>
+                    {resa.statut === 'accepte' ? 'Accepté' :
+                     resa.statut === 'refuse' ? 'Refusé' : 'En attente'}
+                  </span>
                 </div>
               ))}
             </div>
