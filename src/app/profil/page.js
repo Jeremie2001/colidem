@@ -156,43 +156,50 @@ export default function Profil() {
         </div>
 
         {/* Mes annonces */}
-        <div className="bg-white border border-gray-200 rounded-2xl p-6">
-          <div className="flex justify-between items-center mb-4">
-            <p className="text-sm font-medium text-gray-700">Mes annonces ({annonces.length})</p>
-            <Link href="/publier">
-              <button className="text-sm text-green-600 hover:text-green-700 font-medium">
-                + Nouvelle annonce
-              </button>
-            </Link>
-          </div>
+       {/* Mes annonces */}
+<div className="bg-white border border-gray-200 rounded-2xl p-6">
+  <div className="flex justify-between items-center mb-4">
+    <p className="text-sm font-medium text-gray-700">Mes annonces ({annonces.length})</p>
+    <Link href="/publier">
+      <button className="text-sm text-green-600 hover:text-green-700 font-medium">
+        + Nouvelle annonce
+      </button>
+    </Link>
+  </div>
 
-          {annonces.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-6">
-              Tu n'as pas encore publié d'annonce.
+  {annonces.length === 0 ? (
+    <p className="text-sm text-gray-400 text-center py-6">
+      Tu n'as pas encore publié d'annonce.
+    </p>
+  ) : (
+    <div className="flex flex-col gap-3">
+      {annonces.map((annonce) => (
+        <div key={annonce.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
+          <div>
+            <p className="text-sm font-medium text-gray-800">
+              {annonce.ville_depart} → {annonce.ville_arrivee}
             </p>
-          ) : (
-            <div className="flex flex-col gap-3">
-              {annonces.map((annonce) => (
-                <div key={annonce.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
-                  <div>
-                    <p className="text-sm font-medium text-gray-800">
-                      {annonce.ville_depart} → {annonce.ville_arrivee}
-                    </p>
-                    <p className="text-xs text-gray-400">
-                      {new Date(annonce.date_voyage).toLocaleDateString('fr-FR')} · {annonce.prix_par_kilo}€/kg
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => handleSupprimerAnnonce(annonce.id)}
-                    className="text-xs text-red-400 hover:text-red-600 transition-colors"
-                  >
-                    Supprimer
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
+            <p className="text-xs text-gray-400">
+              {new Date(annonce.date_voyage).toLocaleDateString('fr-FR')} · {annonce.prix_par_kilo}€/kg
+            </p>
+          </div>
+          <button
+            onClick={() => handleSupprimerAnnonce(annonce.id)}
+            className="text-xs text-red-400 hover:text-red-600 transition-colors"
+          >
+            Supprimer
+          </button>
         </div>
+      ))}
+    </div>
+  )}
+
+  <Link href="/reservations">
+    <button className="w-full bg-yellow-50 border border-yellow-200 text-yellow-700 font-medium py-3 rounded-xl text-sm hover:bg-yellow-100 transition-colors mt-4">
+      📬 Voir mes réservations reçues
+    </button>
+  </Link>
+</div>
 
         {/* Mes réservations */}
         <div className="bg-white border border-gray-200 rounded-2xl p-6">
