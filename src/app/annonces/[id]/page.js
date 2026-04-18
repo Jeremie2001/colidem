@@ -61,72 +61,134 @@ export default function DetailAnnonce() {
   }, [id])
 
   async function handleReserver() {
-    if (!user) {
-      router.push('/connexion')
-      return
-    }
+  if (!user) {
+    router.push('/connexion')
+    return
+  }
 
-    setEnvoi(true)
-    setSucces('')
+  setEnvoi(true)
+  setSucces('')
 
-    const kilosRestants = annonce.kilos_disponibles - (annonce.kilos_reserves || 0)
+  const kilosRestants = annonce.kilos_disponibles - (annonce.kilos_reserves || 0)
 
-    if (kilos > kilosRestants) {
-      setSucces('Plus assez de kilos disponibles !')
-      setEnvoi(false)
-      return
-    }
-
-    const montant = kilos * annonce.prix_par_kilo
-
-    const { data, error } = await supabase
-      .from('reservations')
-      .insert([{
-        annonce_id: id,
-        expediteur_id: user.id,
-        kilos_reserves: kilos,
-        montant_total: montant,
-        statut: 'en_attente',
-        message: message
-      }])
-      .select()
-      .single()
-
-    if (error) {
-      setSucces('Une erreur est survenue. Réessaie.')
-      setEnvoi(false)
-      return
-    }
-
-    await supabase
-      .from('annonces')
-      .update({ kilos_reserves: (annonce.kilos_reserves || 0) + kilos })
-      .eq('id', id)
-
-    setReservation(data)
-    setAnnonce({ ...annonce, kilos_reserves: (annonce.kilos_reserves || 0) + kilos })
-    setSucces('Réservation envoyée ! Le voyageur va vous contacter.')
+  if (kilos > kilosRestants) {
+    setSucces('Plus assez de kilos disponibles !')
     setEnvoi(false)
+    return
   }
 
-  async function handleAnnuler() {
-    if (!reservation) return
+  const montant = kilos * annonce.prix_par_kilo
 
-    await supabase
-      .from('annonces')
-      .update({ kilos_reserves: Math.max(0, (annonce.kilos_reserves || 0) - reservation.kilos_reserves) })
-      .eq('id', id)
+  const { data, error } = await supabase
+    .from('reservations')
+    .insert([{
+      annonce_id: id,
+      expediteur_id: user.id,
+      kilos_reserves: kilos,
+      montant_total: montant,
+      statut: 'en_attente',
+      message: message
+    }])
+    .select()
+    .single()
 
-    await supabase
-      .from('reservations')
-      .delete()
-      .eq('id', reservation.id)
-
-    setReservation(null)
-    setAnnonce({ ...annonce, kilos_reserves: Math.max(0, (annonce.kilos_reserves || 0) - reservation.kilos_reserves) })
-    setSucces('Réservation annulée.')
+  if (error) {
+    setSucces('Une erreur est survenue. Réessaie.')
+    setEnvoi(false)
+    return
   }
 
+  await supabase
+    .from('annonces')
+    .update({ kilos_reserves: (annonce.kilos_reserves || 0) + kilos })
+    .eq('id', id)
+
+  setReservation(data)
+  setAnnonce({ ...annonce, kilos_reserves: (annonce.kilos_reserves || 0) + kilos })
+  setSucces('Réservation envoyée ! Le voyageur va vous contacter.')
+  setEnvoi(false)
+
+  // Récupérer email du voyageur via la vue
+  const { data: voyageurAvecEmail } = await supabase
+    .from('profiles_with_email')
+    .select('email, nom')
+    .eq('id', annonce.voyageur_id)
+    .single()
+
+  if (voyageurAvecEmail?.email) {
+    await fetch('/api/email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'nouvelle_reservation',
+        destinataire: voyageurAvecEmail.email,
+        data: {
+          voyageur_nom: voyageurAvecEmail.nom,
+          expediteur_nom: user.email,
+          ville_depart: annonce.ville_depart,
+          ville_arrivee: annonce.ville_arrivee,
+          kilos: kilos,
+          montant: montant,
+          message: message
+        }
+      })
+    })
+  }
+}
+
+// async function handleAnnuler() {
+//   if (!reservation) return
+
+//   await supabase
+//     .from('annonces')
+//     .update({ kilos_reserves: Math.max(0, (annonce.kilos_reserves || 0) - reservation.kilos_reserves) })
+//     .eq('id', id)
+
+//   await supabase
+//     .from('reservations')
+//     .delete()
+//     .eq('id', reservation.id)
+
+//   setReservation(null)
+//   setAnnonce({ ...annonce, kilos_reserves: Math.max(0, (annonce.kilos_reserves || 0) - reservation.kilos_reserves) })
+//   setSucces('Réservation annulée.')
+// }
+
+
+async function handleAnnuler() {
+  if (!reservation) return
+
+  const kilosALiberer = reservation.kilos_reserves
+  const kilosReservesActuels = annonce.kilos_reserves || 0
+  const nouveauxKilosReserves = Math.max(0, kilosReservesActuels - kilosALiberer)
+
+  const { error: errorAnnonce } = await supabase
+    .from('annonces')
+    .update({ kilos_reserves: nouveauxKilosReserves })
+    .eq('id', id)
+
+  if (errorAnnonce) {
+    setSucces('Erreur lors de l annulation.')
+    return
+  }
+
+  const { error: errorResa } = await supabase
+    .from('reservations')
+    .delete()
+    .eq('id', reservation.id)
+
+  if (errorResa) {
+    setSucces('Erreur lors de l annulation.')
+    return
+  }
+
+  setReservation(null)
+  setAnnonce({ 
+    ...annonce, 
+    kilos_reserves: nouveauxKilosReserves 
+  })
+  setSucces('Réservation annulée. Les kilos ont été libérés.')
+}
     function getLienWhatsapp() {
         if (!voyageur) return '#'
         const tel = voyageur.telephone ? voyageur.telephone.replace(/\s/g, '').replace('+', '') : ''

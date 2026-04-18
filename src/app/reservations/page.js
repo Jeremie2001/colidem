@@ -37,33 +37,83 @@ export default function Reservations() {
   }, [])
 
   async function handleAccepter(resa) {
-    await supabase
-      .from('reservations')
-      .update({ statut: 'accepte' })
-      .eq('id', resa.id)
+  await supabase
+    .from('reservations')
+    .update({ statut: 'accepte' })
+    .eq('id', resa.id)
 
-    setReservations(reservations.map(r =>
-      r.id === resa.id ? { ...r, statut: 'accepte' } : r
-    ))
-  }
+  setReservations(reservations.map(r =>
+    r.id === resa.id ? { ...r, statut: 'accepte' } : r
+  ))
 
-  async function handleRefuser(resa) {
-    await supabase
-      .from('reservations')
-      .update({ statut: 'refuse' })
-      .eq('id', resa.id)
+  // Email à l'expéditeur
+  const { data: expediteurAvecEmail } = await supabase
+    .from('profiles_with_email')
+    .select('email, nom')
+    .eq('id', resa.expediteur_id)
+    .single()
 
-    await supabase
-      .from('annonces')
-      .update({
-        kilos_reserves: Math.max(0, (resa.annonces.kilos_reserves || 0) - resa.kilos_reserves)
+  if (expediteurAvecEmail?.email) {
+    await fetch('/api/email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'reservation_acceptee',
+        destinataire: expediteurAvecEmail.email,
+        data: {
+          expediteur_nom: expediteurAvecEmail.nom,
+          voyageur_nom: resa.profiles?.nom,
+          ville_depart: resa.annonces?.ville_depart,
+          ville_arrivee: resa.annonces?.ville_arrivee,
+          kilos: resa.kilos_reserves,
+          montant: resa.montant_total
+        }
       })
-      .eq('id', resa.annonce_id)
-
-    setReservations(reservations.map(r =>
-      r.id === resa.id ? { ...r, statut: 'refuse' } : r
-    ))
+    })
   }
+}
+
+async function handleRefuser(resa) {
+  await supabase
+    .from('reservations')
+    .update({ statut: 'refuse' })
+    .eq('id', resa.id)
+
+  await supabase
+    .from('annonces')
+    .update({
+      kilos_reserves: Math.max(0, (resa.annonces.kilos_reserves || 0) - resa.kilos_reserves)
+    })
+    .eq('id', resa.annonce_id)
+
+  setReservations(reservations.map(r =>
+    r.id === resa.id ? { ...r, statut: 'refuse' } : r
+  ))
+
+  // Email à l'expéditeur
+  const { data: expediteurAvecEmail } = await supabase
+    .from('profiles_with_email')
+    .select('email, nom')
+    .eq('id', resa.expediteur_id)
+    .single()
+
+  if (expediteurAvecEmail?.email) {
+    await fetch('/api/email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'reservation_refusee',
+        destinataire: expediteurAvecEmail.email,
+        data: {
+          expediteur_nom: expediteurAvecEmail.nom,
+          ville_depart: resa.annonces?.ville_depart,
+          ville_arrivee: resa.annonces?.ville_arrivee,
+          kilos: resa.kilos_reserves
+        }
+      })
+    })
+  }
+}
 
   function getLienWhatsapp(resa) {
     if (!resa.profiles?.telephone) return '#'
