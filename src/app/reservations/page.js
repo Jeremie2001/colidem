@@ -46,23 +46,21 @@ export default function Reservations() {
     r.id === resa.id ? { ...r, statut: 'accepte' } : r
   ))
 
-  // Email à l'expéditeur
-  const { data: expediteurAvecEmail } = await supabase
-    .from('profiles_with_email')
-    .select('email, nom')
-    .eq('id', resa.expediteur_id)
-    .single()
+  const { data: emailData } = await supabase
+    .rpc('get_user_email', { user_id: resa.expediteur_id })
 
-  if (expediteurAvecEmail?.email) {
-    await fetch('/api/email', {
+  console.log('Email expéditeur:', emailData)
+
+  if (emailData) {
+    const response = await fetch('/api/email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         type: 'reservation_acceptee',
-        destinataire: expediteurAvecEmail.email,
+        destinataire: emailData,
         data: {
-          expediteur_nom: expediteurAvecEmail.nom,
-          voyageur_nom: resa.profiles?.nom,
+          expediteur_nom: resa.profiles?.nom,
+          voyageur_nom: user?.email,
           ville_depart: resa.annonces?.ville_depart,
           ville_arrivee: resa.annonces?.ville_arrivee,
           kilos: resa.kilos_reserves,
@@ -70,6 +68,8 @@ export default function Reservations() {
         }
       })
     })
+    const result = await response.json()
+    console.log('Résultat email acceptation:', result)
   }
 }
 
@@ -90,28 +90,28 @@ async function handleRefuser(resa) {
     r.id === resa.id ? { ...r, statut: 'refuse' } : r
   ))
 
-  // Email à l'expéditeur
-  const { data: expediteurAvecEmail } = await supabase
-    .from('profiles_with_email')
-    .select('email, nom')
-    .eq('id', resa.expediteur_id)
-    .single()
+  const { data: emailData } = await supabase
+    .rpc('get_user_email', { user_id: resa.expediteur_id })
 
-  if (expediteurAvecEmail?.email) {
-    await fetch('/api/email', {
+  console.log('Email expéditeur:', emailData)
+
+  if (emailData) {
+    const response = await fetch('/api/email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         type: 'reservation_refusee',
-        destinataire: expediteurAvecEmail.email,
+        destinataire: emailData,
         data: {
-          expediteur_nom: expediteurAvecEmail.nom,
+          expediteur_nom: resa.profiles?.nom,
           ville_depart: resa.annonces?.ville_depart,
           ville_arrivee: resa.annonces?.ville_arrivee,
           kilos: resa.kilos_reserves
         }
       })
     })
+    const result = await response.json()
+    console.log('Résultat email refus:', result)
   }
 }
 

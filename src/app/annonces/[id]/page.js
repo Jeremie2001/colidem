@@ -108,22 +108,22 @@ export default function DetailAnnonce() {
   setSucces('Réservation envoyée ! Le voyageur va vous contacter.')
   setEnvoi(false)
 
-  // Récupérer email du voyageur via la vue
-  const { data: voyageurAvecEmail } = await supabase
-    .from('profiles_with_email')
-    .select('email, nom')
-    .eq('id', annonce.voyageur_id)
-    .single()
+  // Récupérer email du voyageur via fonction RPC
+  const { data: emailData, error: emailError } = await supabase
+    .rpc('get_user_email', { user_id: annonce.voyageur_id })
 
-  if (voyageurAvecEmail?.email) {
-    await fetch('/api/email', {
+  console.log('Email voyageur:', emailData)
+  console.log('Erreur email:', emailError)
+
+  if (emailData) {
+    const response = await fetch('/api/email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         type: 'nouvelle_reservation',
-        destinataire: voyageurAvecEmail.email,
+        destinataire: emailData,
         data: {
-          voyageur_nom: voyageurAvecEmail.nom,
+          voyageur_nom: voyageur.nom,
           expediteur_nom: user.email,
           ville_depart: annonce.ville_depart,
           ville_arrivee: annonce.ville_arrivee,
@@ -133,8 +133,12 @@ export default function DetailAnnonce() {
         }
       })
     })
+    const result = await response.json()
+    console.log('Résultat envoi email:', result)
   }
 }
+
+
 
 // async function handleAnnuler() {
 //   if (!reservation) return
@@ -183,12 +187,36 @@ async function handleAnnuler() {
   }
 
   setReservation(null)
-  setAnnonce({ 
-    ...annonce, 
-    kilos_reserves: nouveauxKilosReserves 
+  setAnnonce({
+    ...annonce,
+    kilos_reserves: nouveauxKilosReserves
   })
   setSucces('Réservation annulée. Les kilos ont été libérés.')
+
+  // Notifier le voyageur
+  const { data: emailData } = await supabase
+    .rpc('get_user_email', { user_id: annonce.voyageur_id })
+
+  if (emailData) {
+    await fetch('/api/email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'reservation_annulee',
+        destinataire: emailData,
+        data: {
+          voyageur_nom: voyageur.nom,
+          expediteur_nom: user.email,
+          ville_depart: annonce.ville_depart,
+          ville_arrivee: annonce.ville_arrivee,
+          kilos: kilosALiberer
+        }
+      })
+    })
+  }
 }
+
+
     function getLienWhatsapp() {
         if (!voyageur) return '#'
         const tel = voyageur.telephone ? voyageur.telephone.replace(/\s/g, '').replace('+', '') : ''
