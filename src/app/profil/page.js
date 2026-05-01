@@ -13,7 +13,7 @@ export default function Profil() {
   const [reservations, setReservations] = useState([])
   const [chargement, setChargement] = useState(true)
   const [message, setMessage] = useState('')
-  const [form, setForm] = useState({ nom: '', telephone: '' })
+  const [form, setForm] = useState({ nom: '', telephone: '', type_profil: profil.type_profil || 'expediteur' })
 
   useEffect(() => {
     async function chargerProfil() {
@@ -63,7 +63,7 @@ export default function Profil() {
 
     const { error } = await supabase
       .from('profiles')
-      .update({ nom: form.nom, telephone: form.telephone })
+      .update({ nom: form.nom, telephone: form.telephone, type_profil : form.type_profil })
       .eq('id', session.user.id)
 
     if (error) {
@@ -139,6 +139,31 @@ export default function Profil() {
                 className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-700 outline-none focus:border-green-400 transition-colors"
               />
             </div>
+
+
+            <div>
+  <label className="text-sm text-gray-600 block mb-2">Type de profil</label>
+  <div className="grid grid-cols-3 gap-2">
+    {[
+      { value: 'expediteur', label: '📦 Expéditeur' },
+      { value: 'voyageur', label: '✈️ Voyageur' },
+      { value: 'gp', label: '🏢 GP Pro' }
+    ].map((option) => (
+      <button
+        key={option.value}
+        type="button"
+        onClick={() => setForm({ ...form, type_profil: option.value })}
+        className={`py-2.5 rounded-xl text-xs font-medium border-2 transition-colors ${
+          form.type_profil === option.value
+            ? 'border-green-500 bg-green-50 text-green-700'
+            : 'border-gray-200 text-gray-500'
+        }`}
+      >
+        {option.label}
+      </button>
+    ))}
+  </div>
+</div>
 
             {message && (
               <p className={`text-sm font-medium ${message.includes('Erreur') ? 'text-red-500' : 'text-green-600'}`}>

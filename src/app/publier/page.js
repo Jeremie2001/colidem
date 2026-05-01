@@ -16,7 +16,8 @@ export default function PublierAnnonce() {
     date_voyage: '',
     kilos_disponibles: '',
     prix_par_kilo: '',
-    description: ''
+    description: '',
+    paiement_type: 'envoi' 
   })
 
   useEffect(() => {
@@ -37,29 +38,38 @@ export default function PublierAnnonce() {
   }
 
   async function handleSubmit(e) {
-    e.preventDefault()
-    if (!user) return
-    setChargement(true)
-    setMessage('')
+  e.preventDefault()
+  if (!user) return
+  setChargement(true)
+  setMessage('')
 
-    const { error } = await supabase
-      .from('annonces')
-      .insert([{
-        ...form,
-        voyageur_id: user.id,
-        kilos_disponibles: parseFloat(form.kilos_disponibles),
-        prix_par_kilo: parseFloat(form.prix_par_kilo)
-      }])
+  const { data: { session } } = await supabase.auth.getSession()
+  
+  const { data: profil } = await supabase
+    .from('profiles')
+    .select('type_profil')
+    .eq('id', session.user.id)
+    .single()
 
-    if (error) {
-      setMessage('Une erreur est survenue. Réessaie.')
-    } else {
-      setMessage('Annonce publiée avec succès !')
-      setTimeout(() => router.push('/'), 1500)
-    }
+  const { error } = await supabase
+    .from('annonces')
+    .insert([{
+      ...form,
+      voyageur_id: user.id,
+      type_vendeur: profil?.type_profil === 'gp' ? 'gp' : 'voyageur',
+      kilos_disponibles: parseFloat(form.kilos_disponibles),
+      prix_par_kilo: parseFloat(form.prix_par_kilo)
+    }])
 
-    setChargement(false)
+  if (error) {
+    setMessage('Une erreur est survenue. Réessaie.')
+  } else {
+    setMessage('Annonce publiée avec succès !')
+    setTimeout(() => router.push('/'), 1500)
   }
+
+  setChargement(false)
+}
 
   if (!pret) {
     return (
@@ -189,6 +199,39 @@ export default function PublierAnnonce() {
               {message}
             </p>
           )}
+
+          <div>
+  <label className="text-sm font-medium text-gray-700 block mb-2">
+    Paiement
+  </label>
+  <div className="grid grid-cols-2 gap-3">
+    <button
+      type="button"
+      onClick={() => setForm({ ...form, paiement_type: 'envoi' })}
+      className={`py-3 rounded-xl text-sm font-medium border-2 transition-colors ${
+        form.paiement_type === 'envoi'
+          ? 'border-green-500 bg-green-50 text-green-700'
+          : 'border-gray-200 text-gray-500'
+      }`}
+    >
+      💸 À lenvoi
+    </button>
+    <button
+      type="button"
+      onClick={() => setForm({ ...form, paiement_type: 'arrivee' })}
+      className={`py-3 rounded-xl text-sm font-medium border-2 transition-colors ${
+        form.paiement_type === 'arrivee'
+          ? 'border-green-500 bg-green-50 text-green-700'
+          : 'border-gray-200 text-gray-500'
+      }`}
+    >
+      📦 À larrivée
+    </button>
+  </div>
+  <p className="text-xs text-gray-400 mt-2">
+    a larrivé signifie que cest le destinataire qui paie
+  </p>
+</div>
 
           <button
             type="submit"

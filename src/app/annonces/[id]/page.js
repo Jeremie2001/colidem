@@ -264,6 +264,35 @@ async function handleAnnuler() {
             )}
           </div>
 
+
+          {/* Badges */}
+<div className="flex gap-2 mb-4 flex-wrap">
+  {annonce.type_vendeur === 'gp' ? (
+    <span className="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full">
+      🏢 GP Professionnel
+    </span>
+  ) : (
+    <span className="bg-green-100 text-green-700 text-xs font-semibold px-3 py-1 rounded-full">
+      ✈️ Voyageur
+    </span>
+  )}
+  {annonce.paiement_type === 'arrivee' && (
+    <span className="bg-amber-100 text-amber-700 text-xs font-semibold px-3 py-1 rounded-full">
+      📦 Paiement à larrivée
+    </span>
+  )}
+</div>
+
+{/* Message prix estimatif */}
+<div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-4">
+  <p className="text-xs text-amber-700">
+    ⚖️ <strong>Prix estimatif</strong> — Le montant final sera calculé à la pesée du colis.
+    {annonce.paiement_type === 'arrivee' && (
+      <span> Le paiement se fait à larrivée par le destinataire.</span>
+    )}
+  </p>
+</div>
+
           <div className="grid grid-cols-3 gap-4 mb-4">
             <div className="bg-gray-50 rounded-xl p-3 text-center">
               <p className="text-xs text-gray-400 mb-1">Date</p>

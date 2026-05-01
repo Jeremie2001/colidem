@@ -5,6 +5,24 @@ export default function CarteAnnonce({ annonce }) {
     <Link href={`/annonces/${annonce.id}`}>
       <div className="bg-white border border-gray-200 rounded-2xl p-5 hover:shadow-md hover:border-green-200 transition-all cursor-pointer h-full flex flex-col">
 
+        {/* Badges */}
+        <div className="flex gap-2 mb-3">
+          {annonce.type_vendeur === 'gp' ? (
+            <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2.5 py-1 rounded-full">
+              🏢 GP Professionnel
+            </span>
+          ) : (
+            <span className="bg-green-100 text-green-700 text-xs font-semibold px-2.5 py-1 rounded-full">
+              ✈️ Voyageur
+            </span>
+          )}
+          {annonce.paiement_type === 'arrivee' && (
+            <span className="bg-amber-100 text-amber-700 text-xs font-semibold px-2.5 py-1 rounded-full">
+              📦 Paiement à larrivée
+            </span>
+          )}
+        </div>
+
         {/* Header — trajet + prix */}
         <div className="flex justify-between items-start mb-4">
           <div className="flex-1 pr-3">
@@ -32,10 +50,9 @@ export default function CarteAnnonce({ annonce }) {
           </div>
           <div className="flex-1 bg-gray-50 rounded-xl px-3 py-2">
             <p className="text-xs text-gray-400 mb-0.5">Restants</p>
-
             <p className="text-xs font-semibold text-gray-700">
-  {annonce.kilos_disponibles - (annonce.kilos_reserves || 0)} kg
-</p>
+              {annonce.kilos_disponibles - (annonce.kilos_reserves || 0)} kg
+            </p>
           </div>
         </div>
 
