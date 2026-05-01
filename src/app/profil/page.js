@@ -13,8 +13,7 @@ export default function Profil() {
   const [reservations, setReservations] = useState([])
   const [chargement, setChargement] = useState(true)
   const [message, setMessage] = useState('')
-  const [form, setForm] = useState({ nom: '', telephone: '', type_profil: profil.type_profil || 'expediteur' })
-
+  const [form, setForm] = useState({ nom: '', telephone: '', type_profil: 'expediteur' })
   useEffect(() => {
     async function chargerProfil() {
       const { data: { session } } = await supabase.auth.getSession()
@@ -32,7 +31,9 @@ export default function Profil() {
 
       if (profil) {
         setProfil(profil)
-        setForm({ nom: profil.nom, telephone: profil.telephone || '' })
+        setForm({ nom: profil.nom, telephone: profil.telephone || '', type_profil: profil.type_profil || 'expediteur' })
+
+        
       }
 
       const { data: annonces } = await supabase
